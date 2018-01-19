@@ -139,7 +139,7 @@ class enum_db():
         else:
             print_failure("{} table(s) enumerated for {}".format(count, host))
         print_status("Closing\n")
-        sys.exit
+        sys.exit(0)
 
     def mysql_enum(self, con, outfile, host, dbtype, excel):
         table_count = 0
