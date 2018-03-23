@@ -5,6 +5,8 @@ By default enumdb will use newly found, or given, credentials to search the data
 
 *Enumdb is written in python3, use the setup.sh script to ensure all required libraries are installed.*
 
+![](https://user-images.githubusercontent.com/13889819/35242124-ad8e3d9e-ff86-11e7-8f50-bfe2f20160cd.gif)
+
 ## Getting Started
 In the Linux terminal run:
 1. git clone https://github.com/m8r0wn/enumdb
