@@ -30,12 +30,12 @@ In the Linux terminal run:
 `python3 enumdb.py -u sa -P passwords.txt -t mssql -brute 192.168.10.10`
 
 ## All Options
-﻿      -h, --help   show help message and exit
-       -u USERS     Single username, OR
-       -U USERS     Users.txt file
-       -p PASSWORD  Single password, OR
-       -P PASSWORD  Password.txt file
-       -t DBTYPE    Database types: mssql, mysql
-       -port PORT   Specify Non-standard port
-       -csv         CSV output file (Default: xlsx)
-       -brute       Brute force only, do not enumerate
+      -h, --help   show help message and exit
+      -u USERS     Single username, OR
+      -U USERS     Users.txt file
+      -p PASSWORD  Single password, OR
+      -P PASSWORD  Password.txt file
+      -t DBTYPE    Database types: mssql, mysql
+      -port PORT   Specify Non-standard port
+      -csv         CSV output file (Default: xlsx)
+      -brute       Brute force only, do not enumerate
