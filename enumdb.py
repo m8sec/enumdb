@@ -307,18 +307,14 @@ Usage:
         passwd = args.add_mutually_exclusive_group(required=True)
         passwd.add_argument('-p', dest='password', action='append', default=[], help='Single password, OR')
         passwd.add_argument('-P', dest='password', default=False, type=lambda x: file_exists(args, x, 'list'), help='Password.txt file')
-
         args.add_argument('-t', dest='dbtype', type=str, required=True, help='Database types: mssql, mysql')
         args.add_argument('-port', dest='port', type=int, default=0, help='Specify Non-standard port')
         args.add_argument('-csv', dest="excel", action='store_false', help='CSV output file (Default: xlsx)')
         args.add_argument('-brute', dest="brute", action='store_true', help='Brute force only, do not enumerate')
-
         args.add_argument(dest='targets', nargs='+', help='Target database server(s)')
         args = args.parse_args()
-
         #Define default port based on dbtype
         if args.port == 0: args.port = default_port(args.dbtype)
-
         #Launch Main
         main(args, list_targets(args.targets[0]))
     except KeyboardInterrupt:
