@@ -1,7 +1,7 @@
 # enumdb
-Enumdb is brute force and post exploitation tool for MySQL and MSSQL databases. When provided a list of usernames and/or passwords, it will cycle through each looking for valid credentials. Enumdb now supports targeting multiple servers.
+Enumdb is brute force and post exploitation tool for MySQL and MSSQL databases. When provided a list of usernames and/or passwords, it will cycle through each looking for valid credentials.
 
-By default enumdb will use newly found, or given, credentials to search the database and find tables containing sensitive information (usernames, passwords, ssn, credit cards, etc), taking the manual work out of post exploitation. The data will be copied to a .xlsx output file in the current directory, listing one table per sheet. This output file can be changed to .csv using the command line arguments.
+By default enumdb will use newly found, or given, credentials to search the database and find tables containing sensitive information (usernames, passwords, ssn, credit cards, etc), taking the manual work out of post exploitation. The data will be copied to a .xlsx output file in the current directory, listing one table per sheet. This output file can be changed to .csv using the command line arguments. Enumdb now supports targeting multiple servers. If using without the "-brute" option to enumerate the database, one file will be created for each server.
 
 *Enumdb is written in python3, use the setup.sh script to ensure all required libraries are installed.*
 
