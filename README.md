@@ -1,9 +1,13 @@
 # enumdb
-Enumdb is brute force and post exploitation tool for MySQL and MSSQL databases. When provided a list of usernames and/or passwords, it will cycle through each looking for valid credentials.
+Enumdb is brute force and post exploitation tool for MySQL and MSSQL databases. When provided a list of usernames and/or passwords, it will cycle through the given targets looking for valid credentials. By default enumdb will use newly found, or given, credentials, to search for sensitive information such as: usernames, passwords, ssn, credit cards, etc. Taking the manual work out of post exploitation!
 
-By default enumdb will use newly found, or given, credentials to search the database and find tables containing sensitive information (usernames, passwords, ssn, credit cards, etc), taking the manual work out of post exploitation. The data will be copied to a .xlsx output file in the current directory, listing one table per sheet. This output file can be changed to .csv using the command line arguments. Enumdb now supports targeting multiple servers. If using without the "-brute" option to enumerate the database, one file will be created for each server.
+The latest version, enumdb v2.0, has been adapted for larger environments:
+* Key word searches can now be conducted on table or column names to identify sensitive information. These terms can be customized at the top of enumdb.py.
+* Threading has been added to expedite brute forcing and enumeration on larger networks.
+* Enumdb no longer generates reports by default. Reporting (csv/xlsx) must be defined in the command line arguments.
+* When extracting data for reports, users can now define a limit on the number of rows selected. The default value of 100, can be modified at the top of enumdb.py.
 
-*Enumdb is written in python3, use the setup.sh script to ensure all required libraries are installed.*
+*Enumdb is written in python3 and tested on Kali Linux, use the setup.sh script to ensure all required libraries are installed.*
 
 ![](https://user-images.githubusercontent.com/13889819/35242124-ad8e3d9e-ff86-11e7-8f50-bfe2f20160cd.gif)
 
@@ -14,28 +18,31 @@ In the Linux terminal run:
 3. sudo ./enumdb/setup.sh
 
 ## Usage
-* Connect to a MySQL database and enumerate tables writing output to xlsx file:<br>
+* Connect to a MySQL database and search for data via key word in table name (no report)<br>
 `python3 enumdb.py -u root -p '' -t mysql 10.11.1.30`
 
-* Connect to a MSSQL database using a domain username and enumerate tables writing output to csv file:<br>
-`python3 enumdb.py -u 'domain\\user' -p Winter2018! -t mysql -csv 10.11.1.30`
+* Connect to a MSSQL database using a domain username and search for data via keyword in column name writing output to csv file:<br>
+`python3 enumdb.py -u 'domain\\user' -p Winter2018! -t mssql -columns -report csv 10.11.1.30`
 
-* Brute force multiple MySQL servers looking for default credentials:<br>
-`python3 enumdb.py -u root -p '' -t mysql 10.11.1.0-30`
+* Brute force multiple MySQL servers looking for default credentials, no data enumeration:<br>
+`python3 enumdb.py -u root -p '' -t mysql -brute 10.11.1.0-30`
 
-* Brute force MSSQL sa account login. Once valid credentials are found, enumerate data writing output to xlsx:<br>
-`python3 enumdb.py -u sa -P passwords.txt -t mssql 192.168.10.10`
+* Brute force MSSQL sa account login. Once valid credentials are found, enumerate data by column name writing output to xlsx:<br>
+`python3 enumdb.py -u sa -P passwords.txt -t mssql -columns -report xlsx 192.168.10.10`
 
-* Brute force MSSQL sa account login without enumerating data or logging output:<br>
+* Brute force MSSQL sa account on a single server, no data enumeration:<br>
 `python3 enumdb.py -u sa -P passwords.txt -t mssql -brute 192.168.10.10`
 
 ## All Options
-      -h, --help   show help message and exit
-      -u USERS     Single username, OR
-      -U USERS     Users.txt file
-      -p PASSWORD  Single password, OR
-      -P PASSWORD  Password.txt file
-      -t DBTYPE    Database types: mssql, mysql
-      -port PORT   Specify Non-standard port
-      -csv         CSV output file (Default: xlsx)
-      -brute       Brute force only, do not enumerate
+    -h, --help            show this help message and exit
+    -u USERS              Single username
+    -U USERS              Users.txt file
+    -p PASSWORDS          Single password
+    -P PASSWORDS          Password.txt file
+    -threads MAX_THREADS  Max threads (Default: 3)
+    -port PORT            Specify non-standard port
+    -report REPORT        Output Report: csv, excel (Default: None)
+    -t DBTYPE             Database types currently supported: mssql, mysql
+    -columns              Search for key words in column names (Default: table names)
+    -brute                Brute force only, do not enumerate
+    --dns                 Force dns name during execution
