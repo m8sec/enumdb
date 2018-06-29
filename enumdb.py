@@ -194,21 +194,21 @@ class enum_db:
                 con = class_obj.connect(target, args.port, user, passwd)
                 # Start Enumeration
                 if con and not args.brute:
-                    self.db_enum(class_obj, args.dbtype, con, outfile, target, args.column_search, args.report)
+                    self.db_enum(class_obj, args.dbtype, con, outfile, target, args.column_search, args.report, args.verbose)
                 # Close connection
                 if con: con.close()
         if args.report and path.exists(outfile):
             print_closing("Output file created: {}".format(outfile))
 
-    def db_enum(self, db_class, db_type, con, outfile, host, column_search, report):
+    def db_enum(self, db_class, db_type, con, outfile, host, column_search, report, verbose):
         for database in db_class.get_databases(con):
             if database.lower() in DB_BLACKLIST: return
             for table in db_class.get_tables(con, database):
                 if table.lower() in TABLE_BLACKLIST: return
                 if column_search:
-                    self.db_column_search(con, db_type, db_class, outfile, host, database, table, report)
+                    self.db_column_search(con, db_type, db_class, outfile, host, database, table, report, verbose)
                 else:
-                    self.db_table_search(con, db_type, db_class, outfile, host, database, table, report)
+                    self.db_table_search(con, db_type, db_class, outfile, host, database, table, report, verbose)
 
     def db_obj(self, db_type):
         if db_type == 'mssql':
@@ -216,43 +216,42 @@ class enum_db:
         elif db_type == 'mysql':
             return mysql()
 
-    def db_reporter(self, db_class, report, con, outfile, host, db_type, table, database, columns):
-        # Enum data in database, to check for empty data set
-        data = db_class.get_data(con, database, table)
-        # Return on empty table
-        if not data:
-            print_empty('{:33} Table: {:42} DB: {}'.format("Skipping empty data set", table, database))
-            return
+    def db_reporter(self, report, outfile, host, db_type, table, database, columns, data):
         if report == 'csv':
             write_csv(outfile, columns, data, database, table, host)
-            self.table_count += 1
         else:
             # Create xlsx workbook on first found data
             if self.table_count == 0:
                 self.xlsx = create_xlsx(outfile, host, db_type)
             self.xlsx.addto_overview(database, table, host)
             self.xlsx.create_sheet(database, table, columns, data, host)
-            self.table_count += 1
+        self.table_count += 1
 
-    def db_table_search(self, con, db_type, db_class, outfile, host, database, table, report):
+    def db_table_search(self, con, db_type, db_class, outfile, host, database, table, report, verbose):
         for t in TABLE_KEY_WORDS:
             if t in table.lower():
-                print_status('Key Word match: {:17} Table: {:42} DB: {:23} SRV: {} ({})'.format(t, table, database, host,db_type))
-                # Check report in cmd args and table not already reported
-                if report:
-                    self.db_reporter(db_class, report, con, outfile, host, db_type, table, database, db_class.get_columns(con, database, table))
-                return
+                # Enum data in database, to check for empty data set
+                data = db_class.get_data(con, database, table)
+                if data:
+                    print_status('Keyword match: {:11} Table: {:42} DB: {:23} SRV: {} ({})'.format(t, table, database, host,db_type))
+                    if report:
+                        self.db_reporter(report, outfile, host, db_type, table, database, db_class.get_columns(con, database, table), data)
+                elif verbose:
+                    print_empty('{:26} Table: {:42} DB: {:23} SRV: {} ({})'.format("Empty data set", table, database, host, db_type))
 
-    def db_column_search(self, con, db_type, db_class, outfile, host, database, table, report):
+    def db_column_search(self, con, db_type, db_class, outfile, host, database, table, report, verbose):
         columns = db_class.get_columns(con, database, table)
         for col_name in columns:
             for keyword in COLUMN_KEY_WORDS:
                 if keyword in col_name.lower():
-                    print_status('Column: {:25} Table: {:42} DB: {:23} SRV: {} ({})'.format(col_name, table, database, host, db_type))
-                    # Check report in cmd args and table not already reported
-                    if report:
-                        self.db_reporter(db_class, report, con, outfile, host, db_type, table, database, columns)
-                    return
+                    # Enum data in database, to check for empty data set
+                    data = db_class.get_data(con, database, table)
+                    if data:
+                        print_status('Column: {:18} Table: {:42} DB: {:23} SRV: {} ({})'.format(col_name, table, database, host, db_type))
+                        if report:
+                            self.db_reporter(report, outfile, host, db_type, table, database, db_class.get_columns(con, database, table), data)
+                    elif verbose:
+                        print_empty('{:26} Table: {:42} DB: {:23} SRV: {} ({})'.format("Empty data set", table, database, host, db_type))
 
 ##########################################
 # CSV reporting / output functions
@@ -427,8 +426,10 @@ Usage:
         args.add_argument('-report', dest='report', type=str, default=False, help='Output Report: csv, excel (Default: None)')
         args.add_argument('-t', dest='dbtype', type=str, required=True, help='Database types currently supported: mssql, mysql')
         args.add_argument('-columns', dest="column_search", action='store_true', help="Search for key words in column names (Default: table names)")
+        args.add_argument('-v', dest="verbose", action='store_true', help="Show keyword matches that respond with no data")
         args.add_argument('-brute', dest="brute", action='store_true', help='Brute force only, do not enumerate')
         args.add_argument('--dns', dest='dns', action='store_true',help='Force dns name during execution')
+
         args.add_argument(dest='target', nargs='+', help='Target database server(s)')
         args = args.parse_args()
         # Put target input into an array

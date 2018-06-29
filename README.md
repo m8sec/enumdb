@@ -6,6 +6,7 @@ The latest version, enumdb v2.0, has been adapted for larger environments:
 * Threading has been added to expedite brute forcing and enumeration on larger networks.
 * Enumdb no longer generates reports by default. Reporting (csv/xlsx) must be defined in the command line arguments.
 * When extracting data for reports, users can now define a limit on the number of rows selected. The default value of 100, can be modified at the top of enumdb.py.
+* Lastly, more concise output when enumerating large amounts of data.
 
 *Enumdb is written in python3 and tested on Kali Linux, use the setup.sh script to ensure all required libraries are installed.*
 
@@ -34,7 +35,6 @@ In the Linux terminal run:
 `python3 enumdb.py -u sa -P passwords.txt -t mssql -brute 192.168.10.10`
 
 ## All Options
-    -h, --help            show this help message and exit
     -u USERS              Single username
     -U USERS              Users.txt file
     -p PASSWORDS          Single password
@@ -44,5 +44,6 @@ In the Linux terminal run:
     -report REPORT        Output Report: csv, excel (Default: None)
     -t DBTYPE             Database types currently supported: mssql, mysql
     -columns              Search for key words in column names (Default: table names)
+    ﻿-v                   Show keyword matches that respond with no data
     -brute                Brute force only, do not enumerate
     --dns                 Force dns name during execution
