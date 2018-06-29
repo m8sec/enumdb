@@ -238,6 +238,7 @@ class enum_db:
                         self.db_reporter(report, outfile, host, db_type, table, database, db_class.get_columns(con, database, table), data)
                 elif verbose:
                     print_empty('{:26} Table: {:42} DB: {:23} SRV: {} ({})'.format("Empty data set", table, database, host, db_type))
+                return
 
     def db_column_search(self, con, db_type, db_class, outfile, host, database, table, report, verbose):
         columns = db_class.get_columns(con, database, table)
@@ -252,6 +253,7 @@ class enum_db:
                             self.db_reporter(report, outfile, host, db_type, table, database, db_class.get_columns(con, database, table), data)
                     elif verbose:
                         print_empty('{:26} Table: {:42} DB: {:23} SRV: {} ({})'.format("Empty data set", table, database, host, db_type))
+                    return
 
 ##########################################
 # CSV reporting / output functions
