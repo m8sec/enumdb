@@ -325,9 +325,7 @@ def print_closing(msg):
 def list_targets(t):
     # Take in user input and returns an array of target hosts
     hosts = []
-    ip = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
     iprange = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\-\d{1,3}$")
-    dns = re.compile("^.+\.[a-z|A-Z]{2,}$")
     cidr = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/24$")
     try:
         # Txt File
@@ -335,7 +333,7 @@ def list_targets(t):
             if path.exists(t):
                 return [ip.strip() for ip in open(t)]
             else:
-                raise Exception("001: host file not found")
+                raise Exception("host file not found")
         # Multiple 127.0.0.1,example.com
         elif "," in t:
             for x in t.split(","):
@@ -352,15 +350,9 @@ def list_targets(t):
             for x in range(0, 256):
                 target = a[0] + "." + a[1] + "." + a[2] + "." + str(x)
                 hosts.append(target)
-        # Single IP match
-        elif ip.match(t):
-            hosts.append(t)
-        # Dns name
-        elif dns.match(t) or "--dns" in argv:
-            hosts.append(t)
-        # No match
+        # Single IP or DNS name
         else:
-            raise Exception("002: invalid target provided")
+            hosts.append(t)
         return hosts
     except Exception as e:
         print("[!] List_Target Error " + str(e))
@@ -430,8 +422,6 @@ Usage:
         args.add_argument('-columns', dest="column_search", action='store_true', help="Search for key words in column names (Default: table names)")
         args.add_argument('-v', dest="verbose", action='store_true', help="Show keyword matches that respond with no data")
         args.add_argument('-brute', dest="brute", action='store_true', help='Brute force only, do not enumerate')
-        args.add_argument('--dns', dest='dns', action='store_true',help='Force dns name during execution')
-
         args.add_argument(dest='target', nargs='+', help='Target database server(s)')
         args = args.parse_args()
         # Put target input into an array
