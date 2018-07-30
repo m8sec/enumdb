@@ -103,10 +103,13 @@ class mysql():
             return False
 
     def db_query(self, con, cmd):
-        cur = con.cursor()
-        cur.execute(cmd)
-        data = cur.fetchall()
-        cur.close()
+        try:
+            cur = con.cursor()
+            cur.execute(cmd)
+            data = cur.fetchall()
+            cur.close()
+        except:
+            data = ''
         return data
 
     def get_databases(self, con):
@@ -148,10 +151,13 @@ class mssql():
             return False
 
     def db_query(self, con, cmd):
-        cur = con.cursor()
-        cur.execute(cmd)
-        data = cur.fetchall()
-        cur.close()
+        try:
+            cur = con.cursor()
+            cur.execute(cmd)
+            data = cur.fetchall()
+            cur.close()
+        except:
+            data = ''
         return data
 
     def get_databases(self, con):
@@ -392,7 +398,7 @@ def main(args):
         exit(0)
 
 if __name__ == '__main__':
-    version = 2.0
+    version = '2.0.1'
     try:
         args = argparse.ArgumentParser(description="""
                    {0}   (v{1})
@@ -429,7 +435,7 @@ Usage:
         # Define default port based on dbtype
         if args.port == 0: args.port = default_port(args.dbtype)
         # Launch Main
-        print("\nStarting enumdb v.{}\n".format(version) + "-" * 25)
+        print("\nStarting enumdb v{}\n".format(version) + "-" * 25)
         main(args)
     except KeyboardInterrupt:
         print("\n[!] Key Event Detected...\n\n")
