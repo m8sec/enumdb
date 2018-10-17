@@ -398,7 +398,7 @@ def main(args):
         exit(0)
 
 if __name__ == '__main__':
-    version = '2.0.1'
+    version = '2.0.2'
     try:
         args = argparse.ArgumentParser(description="""
                    {0}   (v{1})
@@ -410,7 +410,7 @@ sensitive information such as: users, passwords, ssn, etc.
 Usage:
     python3 enumdb.py -u root -p Password1 -t mysql 10.11.1.30
     python3 enumdb.py -u root -p '' -t mysql -brute 10.0.0.0-50
-    python3 enumdb.py -u 'domain\\user1 -P pass.txt -t mssql 192.168.1.7
+    python3 enumdb.py -u 'domain\user1 -P pass.txt -t mssql 192.168.1.7
     
     ** Having trouble with inputs? Use '' around username & password **""".format(argv[0], version), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
         user = args.add_mutually_exclusive_group(required=True)
@@ -423,7 +423,7 @@ Usage:
 
         args.add_argument('-threads', dest='max_threads', type=int, default=3, help='Max threads (Default: 3)')
         args.add_argument('-port', dest='port', type=int, default=0, help='Specify non-standard port')
-        args.add_argument('-report', dest='report', type=str, default=False, help='Output Report: csv, excel (Default: None)')
+        args.add_argument('-report', dest='report', type=str, default=False, help='Output Report: csv, xlsx (Default: None)')
         args.add_argument('-t', dest='dbtype', type=str, required=True, help='Database types currently supported: mssql, mysql')
         args.add_argument('-columns', dest="column_search", action='store_true', help="Search for key words in column names (Default: table names)")
         args.add_argument('-v', dest="verbose", action='store_true', help="Show keyword matches that respond with no data")
