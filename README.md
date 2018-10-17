@@ -41,7 +41,7 @@ In the Linux terminal run:
     -P PASSWORDS          Password.txt file
     -threads MAX_THREADS  Max threads (Default: 3)
     -port PORT            Specify non-standard port
-    -report REPORT        Output Report: csv, excel (Default: None)
+    -report REPORT        Output Report: csv, xlsx (Default: None)
     -t DBTYPE             Database types currently supported: mssql, mysql
     -columns              Search for key words in column names (Default: table names)
     -v                    Show keyword matches that respond with no data
