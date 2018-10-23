@@ -75,13 +75,21 @@ class create_xlsx():
         ws['A1'] = "[+] Table: {}   Database: {}   Server: {}".format(table, db, host)
         row_count += 1
         for col in columns:
-            ws.cell(row=row_count, column=col_count, value=str(col))
+            try:
+                # Error handling while writing data
+                ws.cell(row=row_count, column=col_count, value=str(col))
+            except:
+                ws.cell(row=row_count, column=col_count, value="Failed to write data")
             col_count += 1
         col_count = 1
         row_count += 1
         for row in data:
             for item in row:
-                ws.cell(row=row_count, column=col_count, value=str(item))
+                try:
+                    # Error handing while writing data (Encrypted characters)
+                    ws.cell(row=row_count, column=col_count, value=str(item))
+                except:
+                    ws.cell(row=row_count, column=col_count, value="Failed to write data")
                 col_count += 1
             col_count = 1
             row_count += 1
@@ -91,7 +99,6 @@ class create_xlsx():
 # MySQL DB Class
 ##########################################
 class mysql():
-
     def connect(self, host, port, user, passwd):
         try:
             con = MySQLdb.connect(host=host, port=port, user=user, password=passwd, connect_timeout=3)
@@ -140,7 +147,6 @@ class mysql():
 # MSSQL DB Class
 ##########################################
 class mssql():
-
     def connect(self, host, port, user, passwd):
         try:
             con = pymssql.connect(server=host, port=port, user=user, password=passwd, login_timeout=3, timeout=15)
@@ -398,7 +404,7 @@ def main(args):
         exit(0)
 
 if __name__ == '__main__':
-    version = '2.0.2'
+    version = '2.0.3'
     try:
         args = argparse.ArgumentParser(description="""
                    {0}   (v{1})
