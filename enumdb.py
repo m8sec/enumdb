@@ -392,7 +392,9 @@ def file_exists(parser, filename):
 def main(args):
     try:
         for t in args.target:
-            Thread(target=enum_db().db_main, args=(args, t,), daemon=True).start()
+            x = Thread(target=enum_db().db_main, args=(args, t,))
+            x.daemon = True
+            x.start()
             # Do not exceed max threads
             while activeCount() > args.max_threads:
                 sleep(0.001)
@@ -404,7 +406,7 @@ def main(args):
         exit(0)
 
 if __name__ == '__main__':
-    version = '2.0.4'
+    version = '2.0.5'
     try:
         args = argparse.ArgumentParser(description=("""
                            {0}   (v{1})
