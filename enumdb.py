@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Author: m8r0wn
+# Author: @m8r0wn
 # License: GPL-3.0
 
 import re
@@ -9,6 +9,7 @@ import pymssql
 import argparse
 from time import sleep
 from sys import exit, argv
+from getpass import getpass
 from os import path, remove
 from openpyxl import Workbook
 from threading import Thread, activeCount
@@ -18,10 +19,10 @@ from threading import Thread, activeCount
 ##########################################
 # Key terms in table name to search for (all lowercase)
 TABLE_KEY_WORDS = ['user', 'login', 'logon', 'config', 'hr', 'finance', 'account', 'password',
-                   'passwd', 'hash', 'ssn', 'credit', 'social', '401k', 'benefits']
+                   'passwd', 'hash', 'ssn', 'credit', 'social', '401k', 'benefits', 'pwd']
 
 # Key terms in column name to search for (all lowercase)
-COLUMN_KEY_WORDS = ['login', 'account', 'pass', 'ssn', 'credit', 'social']
+COLUMN_KEY_WORDS = ['login', 'account', 'pass', 'ssn', 'credit', 'social', 'pwd']
 
 # Database backlist, ex. information_schema (all lowercase)
 DB_BLACKLIST = []
@@ -406,7 +407,7 @@ def main(args):
         exit(0)
 
 if __name__ == '__main__':
-    version = '2.0.5'
+    version = '2.0.6'
     try:
         args = argparse.ArgumentParser(description=("""
                            {0}   (v{1})
@@ -426,7 +427,7 @@ Usage:
         user.add_argument('-u', dest='users', type=str, action='append', help='Single username')
         user.add_argument('-U', dest='users', default=False, type=lambda x: file_exists(args, x), help='Users.txt file')
 
-        passwd = args.add_mutually_exclusive_group(required=True)
+        passwd = args.add_mutually_exclusive_group()
         passwd.add_argument('-p', dest='passwords', action='append', default=[], help='Single password')
         passwd.add_argument('-P', dest='passwords', default=False, type=lambda x: file_exists(args, x), help='Password.txt file')
 
@@ -439,10 +440,17 @@ Usage:
         args.add_argument('-brute', dest="brute", action='store_true', help='Brute force only, do not enumerate')
         args.add_argument(dest='target', nargs='+', help='Target database server(s)')
         args = args.parse_args()
+
         # Put target input into an array
         args.target = list_targets(args.target[0])
+
+        # Get Password if not provided
+        if not args.passwords:
+            args.passwords = [getpass("Enter password, or continue with null-value: ")]
+
         # Define default port based on dbtype
         if args.port == 0: args.port = default_port(args.dbtype)
+
         # Launch Main
         print("\nStarting enumdb v{}\n".format(version) + "-" * 25)
         main(args)

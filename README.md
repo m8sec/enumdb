@@ -12,11 +12,12 @@ The latest version, enumdb v2.0, has been adapted for larger environments:
 
 ![](https://user-images.githubusercontent.com/13889819/35242124-ad8e3d9e-ff86-11e7-8f50-bfe2f20160cd.gif)
 
-## Getting Started
-In the Linux terminal run:
-1. git clone https://github.com/m8r0wn/enumdb
-2. sudo chmod +x enumdb/setup.sh
-3. sudo ./enumdb/setup.sh
+## Installation
+```bash
+git clone https://github.com/m8r0wn/enumdb
+cd enumdb
+pip3 install -r setup/requirements.txt
+``````
 
 ## Usage
 * Connect to a MySQL database and search for data via key word in table name (no report)<br>
