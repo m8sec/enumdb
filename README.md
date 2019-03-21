@@ -8,10 +8,6 @@ The latest version, enumdb v2.0, has been adapted for larger environments:
 * When extracting data for reports, users can now define a limit on the number of rows selected. The default value of 100, can be modified at the top of enumdb.py.
 * Enumdb's output formatting has been modified to provide more concise feedback when enumerating large amounts of data.
 
-*Enumdb is written in python3 and tested on Kali Linux, use the setup.sh script to ensure all required libraries are installed.*
-
-![](https://user-images.githubusercontent.com/13889819/35242124-ad8e3d9e-ff86-11e7-8f50-bfe2f20160cd.gif)
-
 ## Installation
 ```bash
 git clone https://github.com/m8r0wn/enumdb
@@ -34,6 +30,8 @@ pip3 install -r setup/requirements.txt
 
 * Brute force MSSQL sa account on a single server, no data enumeration:<br>
 `python3 enumdb.py -u sa -P passwords.txt -t mssql -brute 192.168.10.10`
+
+![](https://user-images.githubusercontent.com/13889819/35242124-ad8e3d9e-ff86-11e7-8f50-bfe2f20160cd.gif)
 
 ## All Options
     -u USERS              Single username
