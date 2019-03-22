@@ -100,14 +100,17 @@ class create_xlsx():
 # MySQL DB Class
 ##########################################
 class mysql():
-    def connect(self, host, port, user, passwd):
+    def connect(self, host, port, user, passwd, verbose):
         try:
             con = MySQLdb.connect(host=host, port=port, user=user, password=passwd, connect_timeout=3)
             con.query_timeout = 15
             print_success("Connection established {}:{}@{}".format(user,passwd,host))
             return con
         except Exception as e:
-            print_failure("Login failed {}:{}@{}".format(user,passwd,host))
+            if verbose:
+                print_failure("Login failed {}:{}@{}\t({})".format(user,passwd,host,e))
+            else:
+                print_failure("Login failed {}:{}@{}".format(user, passwd, host))
             return False
 
     def db_query(self, con, cmd):
@@ -148,13 +151,16 @@ class mysql():
 # MSSQL DB Class
 ##########################################
 class mssql():
-    def connect(self, host, port, user, passwd):
+    def connect(self, host, port, user, passwd, verbose):
         try:
             con = pymssql.connect(server=host, port=port, user=user, password=passwd, login_timeout=3, timeout=15)
             print_success("Connection established {}:{}@{}".format(user,passwd,host))
             return con
         except Exception as e:
-            print_failure("Login failed {}:{}@{}".format(user,passwd,host))
+            if verbose:
+                print_failure("Login failed {}:{}@{}\t({})".format(user,passwd,host,e))
+            else:
+                print_failure("Login failed {}:{}@{}".format(user, passwd, host))
             return False
 
     def db_query(self, con, cmd):
@@ -204,7 +210,7 @@ class enum_db:
         # Start brute forcing
         for user in args.users:
             for passwd in args.passwords:
-                con = class_obj.connect(target, args.port, user, passwd)
+                con = class_obj.connect(target, args.port, user, passwd, args.verbose)
                 # Start Enumeration
                 if con and not args.brute:
                     self.db_enum(class_obj, args.dbtype, con, outfile, target, args.column_search, args.report, args.verbose)
@@ -433,10 +439,10 @@ Usage:
 
         args.add_argument('-threads', dest='max_threads', type=int, default=3, help='Max threads (Default: 3)')
         args.add_argument('-port', dest='port', type=int, default=0, help='Specify non-standard port')
-        args.add_argument('-report', dest='report', type=str, default=False, help='Output Report: csv, xlsx (Default: None)')
+        args.add_argument('-r', '-report', dest='report', type=str, default=False, help='Output Report: csv, xlsx (Default: None)')
         args.add_argument('-t', dest='dbtype', type=str, required=True, help='Database types currently supported: mssql, mysql')
-        args.add_argument('-columns', dest="column_search", action='store_true', help="Search for key words in column names (Default: table names)")
-        args.add_argument('-v', dest="verbose", action='store_true', help="Show keyword matches that respond with no data")
+        args.add_argument('-c', '-columns', dest="column_search", action='store_true', help="Search for key words in column names (Default: table names)")
+        args.add_argument('-v', dest="verbose", action='store_true', help="Show failed login notices & keyword matches with Empty data sets")
         args.add_argument('-brute', dest="brute", action='store_true', help='Brute force only, do not enumerate')
         args.add_argument(dest='target', nargs='+', help='Target database server(s)')
         args = args.parse_args()

@@ -14,6 +14,9 @@ if [[ $(id -u) != 0 ]]; then
 fi
 
 echo -e "\n[*] Starting enumdb setup script"
+
+apt-get update
+
 echo -e "[*] Checking for Python 3"
 if [[ $(python3 -V 2>&1) == *"not found"* ]]
 then
