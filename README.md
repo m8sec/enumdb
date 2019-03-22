@@ -31,7 +31,7 @@ pip3 install -r setup/requirements.txt
 * Brute force MSSQL sa account on a single server, no data enumeration:<br>
 `python3 enumdb.py -u sa -P passwords.txt -t mssql -brute 192.168.10.10`
 
-![](https://user-images.githubusercontent.com/13889819/35242124-ad8e3d9e-ff86-11e7-8f50-bfe2f20160cd.gif)
+![enumdb](https://user-images.githubusercontent.com/13889819/54823551-9ae80d00-4c7e-11e9-89e5-3140b793b6d7.gif)
 
 ## All Options
       -h, --help                show help message and exit
