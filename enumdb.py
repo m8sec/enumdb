@@ -11,6 +11,7 @@ from time import sleep
 from sys import exit, argv
 from getpass import getpass
 from os import path, remove
+from ipparser import ipparser
 from openpyxl import Workbook
 from threading import Thread, activeCount
 
@@ -341,42 +342,6 @@ def print_closing(msg):
 ##########################################
 # Argparse support / input validation
 ##########################################
-def list_targets(t):
-    # Take in user input and returns an array of target hosts
-    hosts = []
-    iprange = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\-\d{1,3}$")
-    cidr = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/24$")
-    try:
-        # Txt File
-        if t.endswith(".txt"):
-            if path.exists(t):
-                return [ip.strip() for ip in open(t)]
-            else:
-                raise Exception("host file not found")
-        # Multiple 127.0.0.1,example.com
-        elif "," in t:
-            for x in t.split(","):
-                hosts.append(x)
-                # Range 127.0.0.1-50
-        elif iprange.match(t):
-            a, b = t.split("-")
-            c = a.split(".")
-            for x in range(int(c[3]), int(b) + 1):
-                hosts.append(c[0] + "." + c[1] + "." + c[2] + "." + str(x))
-        # Cidr /24
-        elif cidr.match(t):
-            a = t.split("/")[0].split(".")
-            for x in range(0, 256):
-                target = a[0] + "." + a[1] + "." + a[2] + "." + str(x)
-                hosts.append(target)
-        # Single IP or DNS name
-        else:
-            hosts.append(t)
-        return hosts
-    except Exception as e:
-        print("[!] List_Target Error " + str(e))
-        exit(1)
-
 def default_port(db):
     # Get default port if not provided in args
     if db == "mysql":
@@ -448,7 +413,7 @@ Usage:
         args = args.parse_args()
 
         # Put target input into an array
-        args.target = list_targets(args.target[0])
+        args.target = ipparser(args.target[0])
 
         # Get Password if not provided
         if not args.passwords:

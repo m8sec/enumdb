@@ -51,4 +51,12 @@ else
     echo "[+] openpyxl installed"
 fi
 
+if [[ $(python3 -c "import ipparser" 2>&1) == *"No module"* ]]
+then
+    echo -e "[*] Installing python3-ipparser"
+    pip3 install ipparser
+else
+    echo "[+] ipparser installed"
+fi
+
 echo -e "\n[*] enumdb setup complete\n\n"

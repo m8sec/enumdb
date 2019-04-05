@@ -1,5 +1,8 @@
 ### Change Log
 
+#### v.2.0.7
+* Implement IPParser module to extract host information from cmd args
+
 #### v.2.0.6
 * Python 2.7 backwards compatibility
 * If run without a password, enumdb will prompt for a password at runtime. This removes the value from being saved in .bash_history. 
