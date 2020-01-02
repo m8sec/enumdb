@@ -205,7 +205,7 @@ Usage:
         args.add_argument('-threads', dest='max_threads', type=int, default=3, help='Max threads (Default: 3)')
         args.add_argument('-port', dest='port', type=int, default=0, help='Specify non-standard port')
         args.add_argument('-r', '-report', dest='report', type=str, default=False, help='Output Report: csv, xlsx (Default: None)')
-        args.add_argument('-t', dest='dbtype', choices=['mysql', 'mssql', 'psql'], required=True, help='Database type')
+        args.add_argument('-t', dest='dbtype', choices=['mysql', 'mssql'], required=True, help='Database type')
         args.add_argument('-c', '-columns', dest="column_search", action='store_true', help="Search for key words in column names (Default: table names)")
         args.add_argument('-v', dest="verbose", action='store_true', help="Show failed login notices & keyword matches with Empty data sets")
         args.add_argument('-brute', dest="brute", action='store_true', help='Brute force only, do not enumerate')
