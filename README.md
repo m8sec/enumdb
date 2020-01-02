@@ -3,10 +3,10 @@ Enumdb is a brute force and post exploitation tool for MySQL and MSSQL databases
 
 To make the tool more adaptable on larger environments, Threading has been added to expedite brute forcing and enumeration when targeting multiple servers. Additionally, enumdb will not generate a report by default allowing users to get a quick preview of the target database. To extract data, specify a report type in the command line arguments, with either: ```-r csv``` or ```-r xlsx```. The first 100 rows of each identified table or column will be selected in the output report. 
 
-The number of rows captured in reports, blacklisted databases & tables, and keywords for table & column searches can be modified at the top of enumdb.py
+The number of rows captured in reports, blacklisted databases & tables, and keywords for table & column searches can be modified at: ```enumdb/config.py```.
 
 ## Installation
-Kali Linux was designed and testing using Python3 on the Kali Linux operating system. However, backwards compatibility has recently been added for Python2.7.
+Enumdb was designed and testing using Python3 on the Kali Linux operating system. However, backwards compatibility has recently been added for Python2.7.
 
 *Use the requirements file to install the necessary Python packages. If you still experience import issues, try the setup.sh file*
 ```bash
