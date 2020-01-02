@@ -1,5 +1,8 @@
 ### Change Log
 
+#### v.2.1.0
+* Reformat code structure
+
 #### v.2.0.7
 * Implement IPParser module to extract host information from cmd args
 

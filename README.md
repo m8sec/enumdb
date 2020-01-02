@@ -8,11 +8,11 @@ The number of rows captured in reports, blacklisted databases & tables, and keyw
 ## Installation
 Kali Linux was designed and testing using Python3 on the Kali Linux operating system. However, backwards compatibility has recently been added for Python2.7.
 
-*Use the requirements file to install the necessary Python packages. If you still expience import issues, try the archived setup.sh file in the setup folder*
+*Use the requirements file to install the necessary Python packages. If you still experience import issues, try the setup.sh file*
 ```bash
 git clone https://github.com/m8r0wn/enumdb
 cd enumdb
-pip3 install -r setup/requirements.txt
+pip3 install -r requirements.txt
 ``````
 
 ## Usage

@@ -2,3 +2,4 @@ openpyxl
 pymssql
 mysqlclient
 ipparser
+psycopg2
