@@ -7,14 +7,18 @@ Rows captured, blacklisted databases & tables, and keywords searches can all be 
 
 ## Installation
 Enumdb was designed and tested using Python3 for Debian based Linux systems. However, the tool is also compatible with Python2.7, and on other Linux distributions.
-
+* PyPi (last release)
+```bash
+pip3 install enumdb
+``````
+* Or, GitHub (latest code)
 ```bash
 git clone https://github.com/m8r0wn/enumdb
 cd enumdb
 python3 setup.py install
 ``````
 
-If experiencing issues with the [MySQLdb](https://github.com/PyMySQL/mysqlclient-python), additional MySQL development resources may
+If experiencing issues with [MySQLdb](https://github.com/PyMySQL/mysqlclient-python), additional MySQL development resources may
 need to be installed:
 
 * Debian / Ubuntu: 
