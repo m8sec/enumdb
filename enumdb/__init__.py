@@ -181,18 +181,18 @@ def main():
     version = '2.1.0'
     try:
         args = argparse.ArgumentParser(description=("""
-                           {0}   (v{1})
+                        enumdb   (v{0})
     --------------------------------------------------
 Brute force MySQL or MSSQL database logins. Once provided with valid
 credentials, enumdb will attempt to enumerate tables containing
 sensitive information such as: users, passwords, ssn, etc.
 
 Usage:
-    python3 {0} -u root -p Password1 -t mysql 10.11.1.30
-    python3 {0} -u root -p '' -t mysql -brute 10.0.0.0-50
-    python3 {0} -u 'domain\\user1' -P pass.txt -t mssql 192.168.1.7
+    enumdb -u root -p Password1 -t mysql 10.11.1.30
+    enumdb -u root -p '' -t mysql -brute 10.0.0.0-50
+    enumdb -u 'domain\\user1' -P pass.txt -t mssql 192.168.1.7
 
-** Having trouble with inputs? Use \'\' around username & password **""").format(argv[0], version), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
+** Having trouble with inputs? Use \'\' around username & password **""").format(version), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
 
         user = args.add_mutually_exclusive_group(required=True)
         user.add_argument('-u', dest='users', type=str, action='append', help='Single username')

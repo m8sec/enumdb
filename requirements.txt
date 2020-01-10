@@ -1,5 +1,4 @@
 openpyxl
 pymssql
-mysqlclient
 ipparser
-psycopg2
+mysqlclient
