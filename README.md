@@ -2,12 +2,10 @@
 Enumdb is a relational database brute force and post exploitation tool for MySQL and MSSQL. When provided a list of usernames and/or passwords, it will cycle through each host looking for valid credentials. By default, enumdb will use newly discovered credentials to automatically search for sensitive data fields via keyword searches on table or column names. This information can then be extracted and reported to a .csv or .xlsx output file.
 
 **Recent Additions:**
-* Ability to spawn simulated shell on target, executing edb or custom SQL queries.
+* Ability to spawn simulated shell on target, execute edb or custom SQL queries.
 * Added threading during standard enumeration and brute force for faster results.
 * No report by default, ```-r csv``` or ```-r xlsx``` required for data extraction.
-* Will not show failed logins by default, 
-
-
+* Failed login attempts will not be shown by default (```-v``` required).
 
 *Number of rows extracted, blacklisted databases & tables, and keywords searches can all be modified at: ```enumdb/config.py```.*
 
