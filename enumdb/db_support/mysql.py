@@ -12,8 +12,6 @@ class MySQL():
         except Exception as e:
             if verbose:
                 print_failure("Login failed {}:{}@{}\t({})".format(user, passwd, host, e))
-            else:
-                print_failure("Login failed {}:{}@{}".format(user, passwd, host))
             return False
 
     def db_version(self,con):
