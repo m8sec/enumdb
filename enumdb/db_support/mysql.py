@@ -3,7 +3,7 @@ from enumdb.printers import *
 from enumdb.config import SELECT_LIMIT
 
 class MySQL():
-    def connect(self, host, port, user, passwd, verbose):
+    def connect(self, host, port, user, passwd, verbose=False):
         try:
             con = MySQLdb.connect(host=host, port=port, user=user, password=passwd, connect_timeout=3)
             con.query_timeout = 15
@@ -15,6 +15,9 @@ class MySQL():
             else:
                 print_failure("Login failed {}:{}@{}".format(user, passwd, host))
             return False
+
+    def db_version(self,con):
+        self.db_query(con, """SELECT @@VERSION""")
 
     def db_query(self, con, cmd):
         try:
@@ -42,10 +45,16 @@ class MySQL():
     def get_columns(self, con, database, table):
         # database var not used but kept to support mssql
         columns = []
+        self.db_query(con, "USE {}".format(database))
         for x in self.db_query(con, 'SHOW COLUMNS FROM {}'.format(table)):
             columns.append(x[0])
         return columns
 
-    def get_data(self, con, database, table):
+    def get_data(self, con, database, table, rows=False):
         # database var not used but kept to support mssql
-        return self.db_query(con, 'SELECT * FROM {} LIMIT {}'.format(table, SELECT_LIMIT))
+        if rows:
+            select_limit = rows
+        else:
+            select_limit = SELECT_LIMIT
+        self.db_query(con, "USE {}".format(database))
+        return self.db_query(con, 'SELECT * FROM {} LIMIT {}'.format(table, select_limit))

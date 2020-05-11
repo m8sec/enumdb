@@ -1,13 +1,15 @@
 import argparse
+from sys import exit
 from time import sleep
-from sys import exit, argv
 from getpass import getpass
 from os import path, remove
 from ipparser import ipparser
 from threading import Thread, activeCount
+from datetime import datetime
 
 from enumdb.config import *
 from enumdb.printers import *
+from enumdb.shell import DBShell
 from enumdb.xlsx import CreateXLSX
 from enumdb.db_support.mysql import MySQL
 from enumdb.db_support.mssql import MSSQL
@@ -37,10 +39,9 @@ class enum_db:
                 con = class_obj.connect(target, args.port, user, passwd, args.verbose)
                 # Start Enumeration
                 if con and not args.brute:
-                    self.db_enum(class_obj, args.dbtype, con, outfile, target, args.column_search, args.report,
-                                 args.verbose)
-                # Close connection
-                if con: con.close()
+                    self.db_enum(class_obj, args.dbtype, con, outfile, target, args.column_search, args.report, args.verbose)
+                if con:
+                    con.close()
         if args.report and path.exists(outfile):
             print_closing("Output file created: {}".format(outfile))
 
@@ -61,7 +62,7 @@ class enum_db:
     def db_reporter(self, report, outfile, host, db_type, table, database, columns, data):
         if report == 'csv':
             write_csv(outfile, columns, data, database, table, host)
-        else:
+        elif report == 'xlsx':
             # Create xlsx workbook on first found data
             if self.table_count == 0:
                 self.xlsx = CreateXLSX(outfile, host, db_type)
@@ -90,8 +91,7 @@ class enum_db:
                     # Enum data in database, to check for empty data set
                     data = db_class.get_data(con, database, table)
                     if data:
-                        print_status('Column: {:18} Table: {:42} DB: {:23} SRV: {} ({})'.format(col_name, table, database, host,
-                                                                                       db_type))
+                        print_status('Column: {:18} Table: {:42} DB: {:23} SRV: {} ({})'.format(col_name, table, database, host, db_type))
                         if report:
                             self.db_reporter(report, outfile, host, db_type, table, database, db_class.get_columns(con, database, table), data)
                     elif verbose:
@@ -116,19 +116,16 @@ def write_csv(outfile, columns, data, database, table, host):
         write_file(outfile, "\n")
     write_file(outfile, "\n\n\n")
 
-
 def write_file(file, data):
     OpenFile = open(file, 'a')
     OpenFile.write('{}'.format(data))
     OpenFile.close()
-
 
 def outfile_prep(file):
     # Check if another report exists and overwrite
     if path.exists(file):
         remove(file)
     return file
-
 
 def get_outfile(report, target):
     # Setup output file, new file for every enumerated target
@@ -137,12 +134,11 @@ def get_outfile(report, target):
     else:
         return False
 
-
 def file_ext(report):
     if report == 'csv':
-        return "csv"
-    else:
-        return "xlsx"
+        return 'csv'
+    elif report == 'xlsx':
+        return 'xlsx'
 
 ##########################################
 # Argparse support / input validation
@@ -156,60 +152,75 @@ def file_exists(parser, filename):
         parser.error("Input file not found: {}".format(filename))
     return [x.strip() for x in open(filename)]
 
+##########################################
+# Shell functionality
+##########################################
+def shell_launcher(args):
+    if len(args.target) > 1:
+        print_failure("Too many targets provided.")
+        exit(1)
+    DBShell(DB[args.dbtype]['Class'], args.target[0], args.port, args.users[0], args.passwords[0])
 
 ##########################################
 # Main
 ##########################################
 def launcher(args):
     try:
-        for t in args.target:
-            x = Thread(target=enum_db().db_main, args=(args, t,))
-            x.daemon = True
-            x.start()
-            # Do not exceed max threads
-            while activeCount() > args.max_threads:
+        if args.shell:
+            print_status("Initiating SQL shell..")
+            shell_launcher(args)
+        else:
+            print_status("Starting enumeration...")
+            print_status("Users  : {}".format(len(args.users)))
+            print_status("Targets: {}".format(len(args.target)))
+            print_status("Time   : {}\n".format(datetime.now().strftime('%m-%d-%Y %H:%M:%S')))
+            for t in args.target:
+                x = Thread(target=enum_db().db_main, args=(args, t,))
+                x.daemon = True
+                x.start()
+                # Do not exceed max threads
+                while activeCount() > args.max_threads:
+                    sleep(0.001)
+            # Exit all threads before closing
+            while activeCount() > 1:
                 sleep(0.001)
-        # Exit all threads before closing
-        while activeCount() > 1:
-            sleep(0.001)
     except KeyboardInterrupt:
         print("\n[!] Key Event Detected...\n\n")
         exit(0)
 
-
 def main():
-    version = '2.1.0'
+    version = '2.2.0'
     try:
         args = argparse.ArgumentParser(description=("""
                         enumdb   (v{0})
     --------------------------------------------------
-Brute force MySQL or MSSQL database logins. Once provided with valid
-credentials, enumdb will attempt to enumerate tables containing
-sensitive information such as: users, passwords, ssn, etc.
+  Relational database brute force and post exploitation tool
+        """).format(version), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
 
-Usage:
-    enumdb -u root -p Password1 -t mysql 10.11.1.30
-    enumdb -u root -p '' -t mysql -brute 10.0.0.0-50
-    enumdb -u 'domain\\user1' -P pass.txt -t mssql 192.168.1.7
+        args.add_argument('-T', dest='max_threads', type=int, default=10, help='Max threads (Default: 10)')
+        args.add_argument('-v', dest="verbose", action='store_true', help="Verbose output")
 
-** Having trouble with inputs? Use \'\' around username & password **""").format(version), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
+        con = args.add_argument_group("Connection")
+        con.add_argument('-port', dest='port', type=int, default=0, help='Specify non-standard port')
+        con.add_argument('-t', dest='dbtype', choices=['mysql', 'mssql'], required=True, help='Database type')
+        con.add_argument(dest='target', nargs='+', help='Target database server(s) [Positional]')
 
-        user = args.add_mutually_exclusive_group(required=True)
+        auth = args.add_argument_group("Authentication")
+        user = auth.add_mutually_exclusive_group(required=True)
         user.add_argument('-u', dest='users', type=str, action='append', help='Single username')
         user.add_argument('-U', dest='users', default=False, type=lambda x: file_exists(args, x), help='Users.txt file')
 
-        passwd = args.add_mutually_exclusive_group()
+        passwd = auth.add_mutually_exclusive_group()
         passwd.add_argument('-p', dest='passwords', action='append', default=[], help='Single password')
         passwd.add_argument('-P', dest='passwords', default=False, type=lambda x: file_exists(args, x), help='Password.txt file')
 
-        args.add_argument('-threads', dest='max_threads', type=int, default=3, help='Max threads (Default: 3)')
-        args.add_argument('-port', dest='port', type=int, default=0, help='Specify non-standard port')
-        args.add_argument('-r', '-report', dest='report', type=str, default=False, help='Output Report: csv, xlsx (Default: None)')
-        args.add_argument('-t', dest='dbtype', choices=['mysql', 'mssql'], required=True, help='Database type')
-        args.add_argument('-c', '-columns', dest="column_search", action='store_true', help="Search for key words in column names (Default: table names)")
-        args.add_argument('-v', dest="verbose", action='store_true', help="Show failed login notices & keyword matches with Empty data sets")
-        args.add_argument('-brute', dest="brute", action='store_true', help='Brute force only, do not enumerate')
-        args.add_argument(dest='target', nargs='+', help='Target database server(s)')
+        enum = args.add_argument_group("Enumeration")
+        enum.add_argument('-c', '--columns', dest="column_search", action='store_true', help="Search for key words in column names (Default: table names)")
+        enum.add_argument('-r', dest='report', choices=['none', 'csv', 'xlsx'], default='none', help='Extract data and create output report')
+
+        actions = args.add_argument_group("Additional Actions")
+        actions.add_argument('--brute', dest="brute", action='store_true', help='Brute force only (No DB Enumeration)')
+        actions.add_argument('--shell', dest="shell", action='store_true', help='Launch SQL Shell')
         args = args.parse_args()
 
         # Put target input into an array
@@ -220,10 +231,10 @@ Usage:
             args.passwords = [getpass("Enter password, or continue with null-value: ")]
 
         # Define default port based on dbtype
-        if args.port == 0: args.port = default_port(args.dbtype)
+        if args.port == 0:
+            args.port = default_port(args.dbtype)
 
-        # Launch Main
-        print("\nStarting enumdb v{}\n".format(version) + "-" * 25)
+        print_status("Enumdb (v{})".format(version))
         launcher(args)
     except KeyboardInterrupt:
         print("\n[!] Key Event Detected...\n\n")

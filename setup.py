@@ -20,10 +20,10 @@ with open("README.md", "r") as fh:
 
 setup(
     name='enumdb',
-    version='2.1.0',
+    version='2.2.0',
     author = 'm8r0wn',
     author_email = 'm8r0wn@protonmail.com',
-    description = 'Database brute force and post exploitation tool to extract sensitive data',
+    description = 'Relational database brute force and post exploitation tool',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/m8r0wn/enumdb',
@@ -34,7 +34,7 @@ setup(
                     'openpyxl',
                     'pymssql',
                     'mysqlclient',
-                    'ipparser>=0.3.5',
+                    'ipparser>=0.3.6',
     ],
     classifiers = [
                     "Environment :: Console",
