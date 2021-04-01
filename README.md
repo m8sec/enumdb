@@ -11,11 +11,6 @@ Enumdb is a relational database brute force and post exploitation tool for MySQL
 
 ## Installation
 Enumdb was designed and tested using Python3 on Debian based Linux systems (kali). However, the tool is also compatible with Python2.7, and on other Linux distributions.
-* PyPi (last release)
-```bash
-pip3 install enumdb
-``````
-* Or, GitHub (latest code)
 ```bash
 git clone https://github.com/m8r0wn/enumdb
 cd enumdb
