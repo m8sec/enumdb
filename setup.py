@@ -21,8 +21,7 @@ with open("README.md", "r") as fh:
 setup(
     name='enumdb',
     version='2.2.0',
-    author = 'm8r0wn',
-    author_email = 'm8r0wn@protonmail.com',
+    author = 'm8sec',
     description = 'Relational database brute force and post exploitation tool',
     long_description=long_description,
     long_description_content_type="text/markdown",
